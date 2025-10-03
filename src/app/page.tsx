@@ -9,15 +9,15 @@ export default function Home() {
           Vehicle & Fleet Tracker
         </h1>
         <p className="text-lg text-muted-foreground">
-          Ashok Earth Movers
+          Data management by Anandu.
         </p>
         <div className="flex justify-center mt-3">
-          <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary/80">
+          <Badge variant="outline" className="border-blue-300 bg-blue-100/80 text-blue-800">
             Local Data Storage Active
           </Badge>
         </div>
       </header>
-      <main className="max-w-6xl mx-auto">
+      <main className="max-w-7xl mx-auto">
         <VehicleTracker />
       </main>
     </div>

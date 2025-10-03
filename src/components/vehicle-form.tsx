@@ -10,6 +10,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
+import { Separator } from "./ui/separator";
 
 type VehicleFormProps = {
   onAddVehicle: (vehicle: Omit<Vehicle, 'id'>) => void;
@@ -19,8 +20,7 @@ type VehicleFormData = z.infer<typeof vehicleSchema>;
 
 export default function VehicleForm({ onAddVehicle }: VehicleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formMessage, setFormMessage] = useState("");
-
+  
   const form = useForm<VehicleFormData>({
     resolver: zodResolver(vehicleSchema),
     defaultValues: {
@@ -33,27 +33,25 @@ export default function VehicleForm({ onAddVehicle }: VehicleFormProps) {
 
   const onSubmit = (data: VehicleFormData) => {
     setIsSubmitting(true);
-    setFormMessage("");
     try {
       onAddVehicle(data);
       form.reset();
-      setFormMessage("Vehicle added successfully!");
-      setTimeout(() => setFormMessage(""), 3000);
     } catch (error) {
-      setFormMessage("Failed to add vehicle.");
+      console.error("Failed to add vehicle", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="h-fit">
+    <Card className="h-fit shadow-lg rounded-lg">
       <CardHeader>
-        <CardTitle className="border-b pb-3">Add New Vehicle Entry</CardTitle>
+        <CardTitle className="text-xl">Add New Vehicle Entry</CardTitle>
       </CardHeader>
+      <Separator className="mb-6"/>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="vehicle"
@@ -106,10 +104,9 @@ export default function VehicleForm({ onAddVehicle }: VehicleFormProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-11 text-base" disabled={isSubmitting}>
               {isSubmitting ? "Adding..." : "Add Vehicle"}
             </Button>
-            {formMessage && <p className="mt-3 text-sm text-center text-primary">{formMessage}</p>}
           </form>
         </Form>
       </CardContent>

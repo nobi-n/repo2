@@ -44,20 +44,27 @@ export default function VehicleTracker() {
 
   const handleAddVehicle = (newVehicleData: Omit<Vehicle, 'id'>) => {
     const newVehicle: Vehicle = { id: crypto.randomUUID(), ...newVehicleData };
-    setVehicles(prev => [...prev, newVehicle]);
+    setVehicles(prev => [newVehicle, ...prev]);
+    toast({ title: "Success", description: "Vehicle added successfully." });
   };
 
   const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
     setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
     setEditingVehicle(null);
+    toast({ title: "Success", description: "Vehicle details updated." });
   };
 
   const handleDeleteVehicle = (vehicleId: string) => {
     setVehicles(prev => prev.filter(v => v.id !== vehicleId));
     setDeletingVehicle(null);
+    toast({ title: "Success", description: "Vehicle entry deleted." });
   };
   
   const handleExport = () => {
+    if (vehicles.length === 0) {
+      toast({ variant: "destructive", title: "Export Failed", description: "There is no data to export." });
+      return;
+    }
     exportToCsv(vehicles, `fleet-data-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
@@ -65,8 +72,10 @@ export default function VehicleTracker() {
     try {
       const newVehiclesData = await importFromCsv(file);
       const newVehicles: Vehicle[] = newVehiclesData.map(v => ({ id: crypto.randomUUID(), ...v }));
-      setVehicles(prev => [...prev, ...newVehicles]);
-       toast({ title: "Success", description: `${newVehicles.length} vehicles imported successfully.` });
+      // Filter out duplicates based on vehicle number
+      const uniqueNewVehicles = newVehicles.filter(nv => !vehicles.some(ev => ev.vehicle === nv.vehicle));
+      setVehicles(prev => [...prev, ...uniqueNewVehicles]);
+       toast({ title: "Success", description: `${uniqueNewVehicles.length} vehicles imported successfully.` });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({ variant: "destructive", title: "Import Failed", description: errorMessage });
@@ -99,12 +108,12 @@ export default function VehicleTracker() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <section className="lg:col-span-1">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <section className="xl:col-span-1">
         <VehicleForm onAddVehicle={handleAddVehicle} />
       </section>
       
-      <section className="lg:col-span-2">
+      <section className="xl:col-span-2">
         <VehicleTable
           vehicles={vehicles}
           onEdit={setEditingVehicle}

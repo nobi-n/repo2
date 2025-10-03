@@ -28,11 +28,11 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredVehicles = useMemo(() => {
+    const term = searchTerm.toLowerCase();
     return vehicles.filter(v =>
-      (v.vehicle?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-      (v.capacity?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-      (v.owner?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-      (v.phone?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
+      Object.values(v).some(val => 
+        String(val).toLowerCase().includes(term)
+      )
     );
   }, [vehicles, searchTerm]);
 
@@ -45,24 +45,24 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
     if (file) {
       onImport(file);
     }
-    event.target.value = ''; // Reset file input
+    event.target.value = ''; 
   };
 
   return (
-    <Card>
+    <Card className="shadow-lg rounded-lg">
       <CardContent className="p-6">
-        <div className="mb-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
-          <div className="relative flex-grow w-full sm:w-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <div className="relative flex-grow w-full sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search vehicles..."
-              className="w-full sm:w-64 pl-10 pr-4 py-3 h-12 text-base"
+              placeholder="Search by Vehicle or Capacity..."
+              className="w-full pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex-shrink-0 flex items-center space-x-3 w-full sm:w-auto">
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
             <input
               type="file"
               ref={fileInputRef}
@@ -70,11 +70,11 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
               className="hidden"
               onChange={handleFileChange}
             />
-            <Button onClick={handleImportClick} variant="outline" className="h-12 text-base flex-grow sm:flex-grow-0">
-              <FileUp className="mr-2 h-5 w-5" /> Import
+            <Button onClick={handleImportClick} variant="outline" className="flex-grow sm:flex-grow-0">
+              <FileUp className="mr-2 h-4 w-4" /> Import
             </Button>
-            <Button onClick={onExport} className="h-12 text-base flex-grow sm:flex-grow-0">
-              <FileDown className="mr-2 h-5 w-5" /> Export
+            <Button onClick={onExport} className="flex-grow sm:flex-grow-0">
+              <FileDown className="mr-2 h-4 w-4" /> Export
             </Button>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableHead>Vehicle</TableHead>
                 <TableHead>Capacity</TableHead>
                 <TableHead>Owner</TableHead>
@@ -120,8 +120,8 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24">
-                    {vehicles.length === 0 ? "No vehicles added yet." : "No results found."}
+                  <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                    No vehicles added yet.
                   </TableCell>
                 </TableRow>
               )}
