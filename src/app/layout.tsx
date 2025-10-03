@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "../components/ui/toaster";
@@ -20,13 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
-        <div className="h-2.5 bg-foreground" />
         {children}
-        <footer className="fixed bottom-4 left-4">
-          <div className="w-10 h-10 bg-foreground rounded-full flex items-center justify-center text-background font-bold text-lg">
-            N
-          </div>
-        </footer>
         <Toaster />
       </body>
     </html>
