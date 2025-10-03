@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: '/repo2',
+  output: 'export',
   typescript: {
     ignoreBuildErrors: true,
   },
