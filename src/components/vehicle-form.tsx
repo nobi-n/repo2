@@ -80,12 +80,12 @@ export default function VehicleForm({ onAddVehicle }: VehicleFormProps) {
             />
             <FormField
               control={form.control}
-              name="owner"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Owner</FormLabel>
+                  <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Anandu" {...field} />
+                    <Input type="tel" placeholder="e.g., 7356986515" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,12 +93,12 @@ export default function VehicleForm({ onAddVehicle }: VehicleFormProps) {
             />
             <FormField
               control={form.control}
-              name="phone"
+              name="owner"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>Owner</FormLabel>
                   <FormControl>
-                    <Input type="tel" placeholder="e.g., 7356986515" {...field} />
+                    <Input placeholder="e.g., Anandu" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
