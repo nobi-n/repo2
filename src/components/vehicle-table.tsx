@@ -85,8 +85,8 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
               <TableRow className="hover:bg-transparent">
                 <TableHead>Vehicle</TableHead>
                 <TableHead>Capacity</TableHead>
-                <TableHead>Owner</TableHead>
                 <TableHead>Phone</TableHead>
+                <TableHead>Owner</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -96,8 +96,8 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
                   <TableRow key={v.id}>
                     <TableCell className="font-medium">{v.vehicle}</TableCell>
                     <TableCell>{v.capacity}</TableCell>
-                    <TableCell>{v.owner}</TableCell>
                     <TableCell>{v.phone}</TableCell>
+                    <TableCell>{v.owner}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
