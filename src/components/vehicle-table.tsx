@@ -29,8 +29,10 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter(v =>
-      v.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.capacity.toLowerCase().includes(searchTerm.toLowerCase())
+      (v.vehicle?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+      (v.capacity?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+      (v.owner?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+      (v.phone?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
     );
   }, [vehicles, searchTerm]);
 
@@ -50,17 +52,17 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
     <Card>
       <CardContent className="p-6">
         <div className="mb-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
-          <div className="relative flex-grow w-full">
+          <div className="relative flex-grow w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search by Vehicle or Capacity..."
-              className="w-full pl-10 pr-4 py-3 h-12 text-base"
+              placeholder="Search vehicles..."
+              className="w-full sm:w-64 pl-10 pr-4 py-3 h-12 text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex space-x-3 w-full sm:w-auto">
+          <div className="flex-shrink-0 flex items-center space-x-3 w-full sm:w-auto">
             <input
               type="file"
               ref={fileInputRef}
@@ -68,10 +70,10 @@ export default function VehicleTable({ vehicles, onEdit, onDelete, onExport, onI
               className="hidden"
               onChange={handleFileChange}
             />
-            <Button onClick={handleImportClick} variant="outline" className="h-12 text-base">
+            <Button onClick={handleImportClick} variant="outline" className="h-12 text-base flex-grow sm:flex-grow-0">
               <FileUp className="mr-2 h-5 w-5" /> Import
             </Button>
-            <Button onClick={onExport} className="h-12 text-base">
+            <Button onClick={onExport} className="h-12 text-base flex-grow sm:flex-grow-0">
               <FileDown className="mr-2 h-5 w-5" /> Export
             </Button>
           </div>
