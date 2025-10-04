@@ -26,7 +26,7 @@ export default function VehicleTracker() {
       toast({
         variant: "destructive",
         title: "Firebase Error",
-        description: "Firebase is not configured. Please check your .env.local file and restart the server.",
+        description: "Firebase is not configured. Please add your environment variables to Netlify and redeploy.",
       });
       setIsLoading(false);
       return;
