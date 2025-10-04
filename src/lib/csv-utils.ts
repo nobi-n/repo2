@@ -1,7 +1,7 @@
 import type { Vehicle } from './types';
 
 export function exportToCsv(vehicles: Vehicle[], filename: string) {
-  const headers = ['vehicle', 'capacity', 'owner', 'phone'];
+  const headers = ['vehicle', 'capacity', 'phone', 'owner'];
   const csvRows = [
     headers.join(','),
     ...vehicles.map(row => 
@@ -41,7 +41,7 @@ export function importFromCsv(file: File): Promise<Omit<Vehicle, 'id'>[]> {
       try {
         const rows = text.split(/\r?\n/).filter(row => row.trim() !== '');
         const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-        const requiredHeaders = ['vehicle', 'capacity', 'owner', 'phone'];
+        const requiredHeaders = ['vehicle', 'capacity', 'phone', 'owner'];
         if (!requiredHeaders.every(h => headers.includes(h))) {
             return reject(new Error(`CSV must include headers: ${requiredHeaders.join(', ')}`));
         }

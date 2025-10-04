@@ -10,54 +10,80 @@ import { useToast } from "../hooks/use-toast";
 import { exportToCsv, importFromCsv } from '../lib/csv-utils';
 import { Skeleton } from './ui/skeleton';
 import { Card } from './ui/card';
+import { db } from '../lib/firebase';
+import { ref, onValue, set, push, remove, update } from 'firebase/database';
+
 
 export default function VehicleTracker() {
-  const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    setIsMounted(true);
-    try {
-      const storedVehicles = localStorage.getItem('fleet-track-vehicles');
-      if (storedVehicles) {
-        setVehicles(JSON.parse(storedVehicles));
+    const vehiclesRef = ref(db, 'vehicles');
+    const unsubscribe = onValue(vehiclesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const vehiclesList: Vehicle[] = Object.entries(data).map(([id, vehicleData]) => ({
+          id,
+          ...(vehicleData as Omit<Vehicle, 'id'>),
+        }));
+        setVehicles(vehiclesList.reverse()); // Show newest first
+      } else {
+        setVehicles([]);
       }
-    } catch (error) {
-      console.error("Failed to load vehicles from local storage", error);
-      toast({ variant: "destructive", title: "Error", description: "Could not load data from local storage." });
-    }
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Firebase read failed: ", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not load data from the database." });
+      setIsLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [toast]);
 
-  useEffect(() => {
-    if (isMounted) {
-      try {
-        localStorage.setItem('fleet-track-vehicles', JSON.stringify(vehicles));
-      } catch (error) {
-        console.error("Failed to save vehicles to local storage", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not save data to local storage." });
-      }
-    }
-  }, [vehicles, isMounted, toast]);
 
   const handleAddVehicle = (newVehicleData: Omit<Vehicle, 'id'>) => {
-    const newVehicle: Vehicle = { id: crypto.randomUUID(), ...newVehicleData };
-    setVehicles(prev => [newVehicle, ...prev]);
-    toast({ title: "Success", description: "Vehicle added successfully." });
+    const vehiclesRef = ref(db, 'vehicles');
+    const newVehicleRef = push(vehiclesRef);
+    set(newVehicleRef, newVehicleData)
+      .then(() => {
+        toast({ title: "Success", description: "Vehicle added successfully." });
+      })
+      .catch((error) => {
+        console.error("Failed to add vehicle", error);
+        toast({ variant: "destructive", title: "Error", description: "Could not add vehicle." });
+      });
   };
 
   const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
-    setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
-    setEditingVehicle(null);
-    toast({ title: "Success", description: "Vehicle details updated." });
+    const { id, ...vehicleData } = updatedVehicle;
+    const vehicleRef = ref(db, `vehicles/${id}`);
+    update(vehicleRef, vehicleData)
+      .then(() => {
+        setEditingVehicle(null);
+        toast({ title: "Success", description: "Vehicle details updated." });
+      })
+      .catch((error) => {
+        console.error("Failed to update vehicle", error);
+        toast({ variant: "destructive", title: "Error", description: "Could not update vehicle." });
+      });
   };
 
   const handleDeleteVehicle = (vehicleId: string) => {
-    setVehicles(prev => prev.filter(v => v.id !== vehicleId));
-    setDeletingVehicle(null);
-    toast({ title: "Success", description: "Vehicle entry deleted." });
+    const vehicleRef = ref(db, `vehicles/${vehicleId}`);
+    remove(vehicleRef)
+      .then(() => {
+        setDeletingVehicle(null);
+        toast({ title: "Success", description: "Vehicle entry deleted." });
+      })
+      .catch((error) => {
+        console.error("Failed to delete vehicle", error);
+        toast({ variant: "destructive", title: "Error", description: "Could not delete vehicle." });
+      });
   };
   
   const handleExport = () => {
@@ -71,18 +97,34 @@ export default function VehicleTracker() {
   const handleImport = async (file: File) => {
     try {
       const newVehiclesData = await importFromCsv(file);
-      const newVehicles: Vehicle[] = newVehiclesData.map(v => ({ id: crypto.randomUUID(), ...v }));
-      // Filter out duplicates based on vehicle number
-      const uniqueNewVehicles = newVehicles.filter(nv => !vehicles.some(ev => ev.vehicle === nv.vehicle));
-      setVehicles(prev => [...prev, ...uniqueNewVehicles]);
-       toast({ title: "Success", description: `${uniqueNewVehicles.length} vehicles imported successfully.` });
+      const vehiclesRef = ref(db, 'vehicles');
+      const updates: { [key: string]: Omit<Vehicle, 'id'> } = {};
+      let importCount = 0;
+
+      newVehiclesData.forEach(v => {
+        // Prevent duplicates based on vehicle number
+        if (!vehicles.some(ev => ev.vehicle === v.vehicle)) {
+          const newVehicleRef = push(vehiclesRef);
+          if (newVehicleRef.key) {
+            updates[newVehicleRef.key] = v;
+            importCount++;
+          }
+        }
+      });
+
+      if (importCount > 0) {
+        await update(ref(db, 'vehicles'), updates);
+        toast({ title: "Success", description: `${importCount} vehicles imported successfully.` });
+      } else {
+        toast({ title: "Import Info", description: "No new vehicles to import." });
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({ variant: "destructive", title: "Import Failed", description: errorMessage });
     }
   };
 
-  if (!isMounted) {
+  if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-1 p-6 h-fit">

@@ -26,15 +26,15 @@ export default function VehicleForm({ onAddVehicle }: VehicleFormProps) {
     defaultValues: {
       vehicle: "",
       capacity: "",
-      owner: "",
       phone: "",
+      owner: "",
     },
   });
 
-  const onSubmit = (data: VehicleFormData) => {
+  const onSubmit = async (data: VehicleFormData) => {
     setIsSubmitting(true);
     try {
-      onAddVehicle(data);
+      await onAddVehicle(data);
       form.reset();
     } catch (error) {
       console.error("Failed to add vehicle", error);
