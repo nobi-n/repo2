@@ -18,13 +18,14 @@ const firebaseConfig = {
 // Initialize Firebase
 let app;
 if (!getApps().length) {
-  if (!firebaseConfig.projectId) {
-     throw new Error("Missing Firebase configuration. Please check your .env.local file.");
+  // Only initialize if the config has a projectId. This prevents crashes if env vars are missing.
+  if (firebaseConfig.projectId) {
+    app = initializeApp(firebaseConfig);
   }
-  app = initializeApp(firebaseConfig);
 } else {
   app = getApp();
 }
 
 // Initialize Realtime Database and get a reference to the service
-export const db = getDatabase(app);
+// We check if app was initialized before trying to get the database.
+export const db = app ? getDatabase(app) : null;

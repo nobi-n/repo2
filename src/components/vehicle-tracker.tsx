@@ -22,6 +22,16 @@ export default function VehicleTracker() {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!db) {
+      toast({
+        variant: "destructive",
+        title: "Firebase Error",
+        description: "Firebase is not configured. Please check your .env.local file and restart the server.",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     const vehiclesRef = ref(db, 'vehicles');
     const unsubscribe = onValue(vehiclesRef, (snapshot) => {
       const data = snapshot.val();
@@ -47,6 +57,7 @@ export default function VehicleTracker() {
 
 
   const handleAddVehicle = (newVehicleData: Omit<Vehicle, 'id'>) => {
+    if (!db) return;
     const vehiclesRef = ref(db, 'vehicles');
     const newVehicleRef = push(vehiclesRef);
     set(newVehicleRef, newVehicleData)
@@ -60,6 +71,7 @@ export default function VehicleTracker() {
   };
 
   const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
+    if (!db) return;
     const { id, ...vehicleData } = updatedVehicle;
     const vehicleRef = ref(db, `vehicles/${id}`);
     update(vehicleRef, vehicleData)
@@ -74,6 +86,7 @@ export default function VehicleTracker() {
   };
 
   const handleDeleteVehicle = (vehicleId: string) => {
+    if (!db) return;
     const vehicleRef = ref(db, `vehicles/${vehicleId}`);
     remove(vehicleRef)
       .then(() => {
@@ -95,6 +108,7 @@ export default function VehicleTracker() {
   };
 
   const handleImport = async (file: File) => {
+    if (!db) return;
     try {
       const newVehiclesData = await importFromCsv(file);
       const vehiclesRef = ref(db, 'vehicles');
