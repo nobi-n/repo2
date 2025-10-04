@@ -18,6 +18,9 @@ const firebaseConfig = {
 // Initialize Firebase
 let app;
 if (!getApps().length) {
+  if (!firebaseConfig.projectId) {
+     throw new Error("Missing Firebase configuration. Please check your .env.local file.");
+  }
   app = initializeApp(firebaseConfig);
 } else {
   app = getApp();
